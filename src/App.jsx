@@ -1,30 +1,37 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 function App() {
 
   const [userId, setUserId] = useState("")
 
-  const fetchData = async () => {
-    if (userId !== "") {
-      try {
-        const res = await axios.get(`https://dummyjson.com/users/${userId}`)
-        console.log(res.data)
-      } catch (error) {
-        console.log(error)
-        if (error.message === "Request failed with status code 404" && error.status === 404) {
-          alert(error.code)
+  useEffect(() => {
+    const controller = new AbortController();
+
+
+    const fetchData = async () => {
+      if (userId !== "") {
+        try {
+          const res = await axios.get(`https://dummyjson.com/users/${userId}`, {
+            signal: controller.signal
+          })
+          console.log(res.data)
+        } catch (error) {
+          console.log(error.message)
         }
       }
-    } else {
-      alert("Please fill out the form")
     }
-  }
+    fetchData();
+
+    return () => {
+      controller.abort();
+    }
+
+  }, [userId])
 
   return (
     <div>
       <input type="text" onInput={(event) => setUserId(event.target.value)} />
-      <button onClick={fetchData}>Click</button>
     </div>
   )
 }
